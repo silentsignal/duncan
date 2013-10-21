@@ -4,7 +4,7 @@ import requests
 import argparse
 import Queue
 
-class Blind(threading.Thread):
+class Duncan(threading.Thread):
 	def __init__(self,query='select version()',pos=1,q=None,ascii_begin=32,ascii_end=123):
 		threading.Thread.__init__(self)
 		self._query=query
@@ -55,7 +55,7 @@ args = parser.parse_args()
 q=Queue.Queue()
 threads=[]
 for p in xrange(args.pos_start,args.pos_end):
-	thread=Blind(args.query,p,q,args.ascii_start,args.ascii_end)
+	thread=Duncan(args.query,p,q,args.ascii_start,args.ascii_end)
 	threads.append(thread)
 	thread.start()
 
