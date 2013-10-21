@@ -66,4 +66,4 @@ l=[]
 while not q.empty():
 	l.append(q.get())
 
-print sorted(list(l))
+print ''.join([i[1] for i in sorted(list(l))])
