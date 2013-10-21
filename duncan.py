@@ -6,6 +6,14 @@ import Queue
 
 class Duncan(threading.Thread):
 	def __init__(self,query='select version()',pos=1,q=None,ascii_begin=32,ascii_end=123):
+		"""Main constructor
+		Keyword arguments:
+        query -- Query to be executed
+        pos -- Character position to test
+        q -- Results Queue object
+        ascii_begin -- Start of the ASCII range to test
+        ascii_end -- End of the ASCII range to test
+        """
 		threading.Thread.__init__(self)
 		self._query=query
 		self._pos=pos
@@ -44,12 +52,12 @@ class Duncan(threading.Thread):
 		else:
 			return False
 
-parser = argparse.ArgumentParser(description='Blind SQL injector')
-parser.add_argument("--query",required=True)
-parser.add_argument("--pos-start",default=1,type=int)
-parser.add_argument("--pos-end",default=5,type=int)
-parser.add_argument("--ascii-start",default=32,type=int)
-parser.add_argument("--ascii-end",default=123,type=int)
+parser = argparse.ArgumentParser(description='Duncan - Blind SQL injector skeleton')
+parser.add_argument("--query",required=True,help="The query to be run. Should contain only one attribute.")
+parser.add_argument("--pos-start",default=1,type=int,help="First character position to look up")
+parser.add_argument("--pos-end",default=5,type=int,help="Last character position to look up")
+parser.add_argument("--ascii-start",default=32,type=int,help="Start of the ASCII range to test")
+parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII range to test")
 
 args = parser.parse_args()
 q=Queue.Queue()
