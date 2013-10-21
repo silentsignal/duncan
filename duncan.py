@@ -22,10 +22,10 @@ class Blind(threading.Thread):
 				self._min=guess
 		if self.decide(self._max):
 			print "Position %d: %c" % (self._pos,chr(self._min))
-			q.append((self._pos,chr(self._min)))
+			q.put((self._pos,chr(self._min)))
 		else:
 			print "Position %d: %c" % (self._pos,chr(self._max))
-			q.append((self._pos,chr(self._max)))
+			q.put((self._pos,chr(self._max)))
 
 
 	def decide(self,guess,less_than_guess=True):
@@ -52,7 +52,7 @@ parser.add_argument("--ascii-start",default=32,type=int)
 parser.add_argument("--ascii-end",default=123,type=int)
 
 args = parser.parse_args()
-q=[]
+q=Queue.Queue()
 threads=[]
 for p in xrange(args.pos_start,args.pos_end):
 	thread=Blind(args.query,p,q,args.ascii_start,args.ascii_end)
@@ -62,4 +62,8 @@ for p in xrange(args.pos_start,args.pos_end):
 for t in threads:
 	t.join()
 
-print sorted(list(q))
+l=[]
+while not q.empty():
+	l.append(q.get())
+
+print sorted(list(l))
