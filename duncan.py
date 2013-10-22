@@ -11,12 +11,12 @@ class Duncan(threading.Thread):
         query -- Query to be executed
         pos -- Character position to test
         q -- Results Queue object
-        charset -- Ordered list of the character codes to be tested
+        charset -- List of the character codes to be tested
         """
 		threading.Thread.__init__(self)
 		self._query=query
 		self._pos=pos
-		self._charset=charset
+		self._charset=sorted(list(set(charset)))
 		self._debug=debug
 
 	def debug(self,level,msg):
@@ -28,10 +28,8 @@ class Duncan(threading.Thread):
 			guess=self._charset[len(self._charset)/2]
 			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._charset[-1], guess, self._charset[0]))
 			if self.decide(guess):
-				#self._max=guess-1
 				self._charset=self._charset[0:len(self._charset)/2]
 			else:
-				#self._min=guess
 				self._charset=self._charset[len(self._charset)/2:]
 		if self.decide(self._charset[-1]):
 			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[0])))
@@ -71,10 +69,11 @@ args = parser.parse_args()
 q=Queue.Queue()
 threads=[]
 
-charset=range(args.ascii_start,args.ascii_end+1)
+charset=[]
 if args.charset is not None:
-	charset.append([ord(c) for c in list(args.charset)])
-	charset.sort()
+	charset=[ord(c) for c in list(args.charset)]
+else:
+	charset=range(args.ascii_start,args.ascii_end+1)
 
 for p in xrange(args.pos_start,args.pos_end):
 	thread=Duncan(args.query,p,q,charset,args.debug)
