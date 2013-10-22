@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import threading
 import requests
 import argparse
