@@ -17,7 +17,7 @@ Command Line Examples
 ### Basic usage
 
 ```
-duncan.py --query "select version()"
+run_duncan.py --use mymodule.MyDuncan --query "select version()"
 ```
 
 ### Streching the window
@@ -25,13 +25,13 @@ duncan.py --query "select version()"
 By default we look for the first 5 characters of the result. You can expand this:
 
 ```
-duncan.py --query "select version()" --pos-end 10
+run_duncan.py --use mymodule.MyDuncan --query "select version()" --pos-end 10
 ```
 
 Or you can look up specific parts of the output:
 
 ```
-duncan.py --query "select version()" --pos-begin 10 --pos-end 20
+run_duncan.py --use mymodule.MyDuncan --query "select version()" --pos-begin 10 --pos-end 20
 ```
 
 Duncan starts an individual thread for each tested character position, so large windows can result in high load at server side.
@@ -41,13 +41,13 @@ Duncan starts an individual thread for each tested character position, so large 
 Like MSSQL:
 
 ```
-duncan.py --query "select cast(123 as char)"
+run_duncan.py --use mymodule.MyDuncan --query "select cast(123 as char)"
 ```
 
 ### Limited charset
 
 ```
-duncan.py --query "SELECT some_hex_value FROM t" --charset 0123456789abcdef
+run_duncan.py --use mymodule.MyDuncan --query "SELECT some_hex_value FROM t" --charset 0123456789abcdef
 ```
 
 Charset characters can be duplicated and be provided in arbitrary order. 
@@ -57,13 +57,13 @@ Charset characters can be duplicated and be provided in arbitrary order.
 Only test uppercase letters:
 
 ```
-duncan.py --query "SELECT some_hex_value FROM t" --ascii-start 64 -ascii-end 91
+run_duncan.py --use mymodule.MyDuncan --query "SELECT some_hex_value FROM t" --ascii-start 64 -ascii-end 91
 ```
 
 ### Further info
 
 ```
-duncan.py -h
+run_duncan.py -h
 ```
 
 ```
