@@ -20,7 +20,7 @@ class Duncan():
 
 	def debug(self,level,msg):
 		if level<=self._debug:
-			sys.stderr.write("[Pos %d] %s " % (self._pos,msg))
+			sys.stderr.write("[Pos %d] %s \n" % (self._pos,msg))
 
 	def __call__(self):
 		while len(self._charset)>2:
