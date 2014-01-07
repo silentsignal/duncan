@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+
 class Duncan():
 	def __init__(self,query='select version()',pos=1,q=None,charset=[],debug=0):
 		"""Main constructor
@@ -18,7 +20,7 @@ class Duncan():
 
 	def debug(self,level,msg):
 		if level<=self._debug:
-			print ("[Pos %d] "%self._pos)+msg
+			sys.stderr.write("[Pos %d] %s " % (self._pos,msg))
 
 	def __call__(self):
 		while len(self._charset)>2:
