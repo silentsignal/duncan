@@ -11,6 +11,11 @@ Duncan is a skeleton to implement custom blind SQL injection exploits. It implem
 
 You should implement Duncan.decide() for yourself in accordance with the provided comments. In a typical HTTP(S) scenario I prefer [Requests](http://www.python-requests.org/en/latest/), but you can implement your exploit over arbitrary protocol, Duncan only provides some platform (protocol, DBMS, OS ...) independent boiler plate.
 
+Code Examples
+-------------
+
+You can find some basic examples in duncansamples.py
+
 Command Line Examples
 ---------------------
 
@@ -70,6 +75,7 @@ run_duncan.py -h
 cat duncan.py
 ```
 
-### TODO
+TODO
+----
 
 * Samples for optimized test strategies

