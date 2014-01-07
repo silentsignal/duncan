@@ -72,5 +72,4 @@ cat duncan.py
 
 ### TODO
 
-* Better granularity for thread count configuration
-* Self-adjusting timer for more efficient time-based injections
+* Samples for optimized test strategies
