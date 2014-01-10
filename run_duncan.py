@@ -39,7 +39,7 @@ parser.add_argument("--use",required=True,help="The implementation to be used (f
 parser.add_argument("--query",required=True,help="The query to be run. Should contain only one attribute.")
 parser.add_argument("--pos-start",default=1,type=int,help="First character position to look up")
 parser.add_argument("--pos-end",default=5,type=int,help="Last character position to look up")
-parser.add_argument("--threads",default=5,type=int,help="Last character position to look up")
+parser.add_argument("--threads",type=int,help="Last character position to look up")
 parser.add_argument("--ascii-start",default=32,type=int,help="Start of the ASCII range to test")
 parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII range to test")
 parser.add_argument("--charset",help="Custom character set")
@@ -49,7 +49,10 @@ args = parser.parse_args()
 module=__import__(args.use.split('.')[0])
 myclass=getattr(module,args.use.split('.')[1])
 q=Queue()
-pool=ThreadPool(args.threads)
+if args.threads is not None:
+	pool=ThreadPool(args.threads)
+else:
+	pool=ThreadPool(args.pos_end-args.pos_start+1)
 
 charset=[]
 if args.charset is not None:
