@@ -61,7 +61,10 @@ class DuncanTime(Duncan):
 
 	def fallback(self):
 		import math
-
+		if len(self._charset)<3: 
+			return True 
+		else: 
+			return False
 		expected_linear=(len(self._charset)/2.0)*self._rttmin+self._rttmax
 		expected_binary=math.log(len(self._charset),2)*self._rttmax*0.5
 		self.debug(5,"Expected costs - Linear: %f Binary: %f" % (expected_linear,expected_binary))
@@ -103,6 +106,3 @@ class DuncanTime(Duncan):
 				return
 		self.debug(3,"Linear search last element: Min: %c Max: %c" % (self._charset[0],self._charset[-1]))
 		self._q.put((self._pos,chr(self._charset[-1])))
-
-
-

