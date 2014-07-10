@@ -39,7 +39,7 @@ parser.add_argument("--use",required=True,help="The implementation to be used (f
 parser.add_argument("--query",required=True,help="The query to be run. Should contain only one attribute.")
 parser.add_argument("--pos-start",default=1,type=int,help="First character position to look up")
 parser.add_argument("--pos-end",default=5,type=int,help="Last character position to look up")
-parser.add_argument("--threads",type=int,help="Last character position to look up")
+parser.add_argument("--threads",type=int,help="Thread count")
 parser.add_argument("--ascii-start",default=32,type=int,help="Start of the ASCII range to test")
 parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII range to test")
 parser.add_argument("--charset",help="Custom character set")
