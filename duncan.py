@@ -3,7 +3,7 @@
 import sys
 
 class Duncan():
-	def __init__(self,query='select version()',pos=1,q=None,charset=[],debug=0):
+	def __init__(self,query='select version()',pos=1,q=None,charset=[],debug=0,args=None):
 		"""Main constructor
 
 		Keyword arguments:
@@ -17,6 +17,7 @@ class Duncan():
 		self._charset=sorted(list(set(charset)))
 		self._debug=debug
 		self._q=q
+		self._args=args
 
 	def debug(self,level,msg):
 		if level<=self._debug:

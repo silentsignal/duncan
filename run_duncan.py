@@ -45,7 +45,7 @@ parser.add_argument("--ascii-end",default=123,type=int,help="End of the ASCII ra
 parser.add_argument("--charset",help="Custom character set")
 parser.add_argument("--debug",default=0,type=int,help="Debug - higher values for more verbosity")
 
-args = parser.parse_args()
+args, module_args = parser.parse_known_args()
 module=__import__(args.use.split('.')[0])
 myclass=getattr(module,args.use.split('.')[1])
 q=Queue()
@@ -61,7 +61,7 @@ else:
 	charset=range(args.ascii_start,args.ascii_end+1)
 
 for p in xrange(args.pos_start,args.pos_end):
-	pool.add_task(myclass(args.query,p,q,charset,args.debug))
+	pool.add_task(myclass(args.query,p,q,charset,args.debug,module_args))
 
 pool.wait_completion()
 
