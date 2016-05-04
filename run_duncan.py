@@ -56,7 +56,7 @@ else:
 
 charset=[]
 if args.charset is not None:
-	charset=[ord(c) for c in list(args.charset)]
+	charset=[ord(c) for c in args.charset]
 else:
 	charset=range(args.ascii_start,args.ascii_end+1)
 
