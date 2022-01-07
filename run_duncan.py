@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 
 # Based on http://code.activestate.com/recipes/577187-python-thread-pool/
@@ -16,8 +16,7 @@ class Worker(Thread):
 	def run(self):
 		while True:
 			func, args, kargs = self.tasks.get()
-			try: func(*args, **kargs)
-			except Exception, e: print e
+			func(*args, **kargs)
 			self.tasks.task_done()
 
 class ThreadPool:
@@ -56,11 +55,11 @@ else:
 
 charset=[]
 if args.charset is not None:
-	charset=[ord(c) for c in list(args.charset)]
+	charset=[ord(c) for c in args.charset]
 else:
-	charset=range(args.ascii_start,args.ascii_end+1)
+	charset=list(range(args.ascii_start,args.ascii_end+1))
 
-for p in xrange(args.pos_start,args.pos_end):
+for p in range(args.pos_start,args.pos_end):
 	pool.add_task(myclass(args.query,p,q,charset,args.debug,module_args))
 
 pool.wait_completion()
@@ -69,4 +68,4 @@ l=[]
 while not q.empty():
 	l.append(q.get())
 
-print ''.join([i[1] for i in sorted(list(l))])
+print(''.join([i[1] for i in sorted(list(l))]))

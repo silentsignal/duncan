@@ -25,12 +25,12 @@ class Duncan():
 
 	def __call__(self):
 		while len(self._charset)>2:
-			guess=self._charset[len(self._charset)/2]
+			guess=self._charset[int(len(self._charset)/2)]
 			self.debug(5,"Max: %d Guess: %d Min: %d" % (self._charset[-1], guess, self._charset[0]))
 			if self.decide(guess):
-				self._charset=self._charset[0:len(self._charset)/2]
+				self._charset=self._charset[0:int(len(self._charset)/2)]
 			else:
-				self._charset=self._charset[len(self._charset)/2:]
+				self._charset=self._charset[int(len(self._charset)/2):]
 		if self.decide(self._charset[-1]):
 			self.debug(1,"Position %d: %c" % (self._pos,chr(self._charset[0])))
 			self._q.put((self._pos,chr(self._charset[0])))
