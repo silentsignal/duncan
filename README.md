@@ -5,7 +5,7 @@ Duncan - Blind SQL injector skeleton
 "I may be blind, but there are some things I still see."
 ```
 
-There are moments in life when automated SQL injection tools are overcomplicating their task, become hard or impossible to properly configure but writing and debugging your own specialized exploit still seems like a lot of trouble. How nice would it be if you had most of the boiler plate ready and had to write only the "interessting" parts of the sploit?
+There are moments in life when automated SQL injection tools are overcomplicating their task, become hard or impossible to properly configure but writing and debugging your own specialized exploit still seems like a lot of trouble. How nice would it be if you had most of the boiler plate ready and had to write only the "interesting" parts of the sploit?
 
 Duncan is a skeleton to implement custom blind SQL injection exploits. It implements binary search and supports multi-threading.
 
@@ -39,7 +39,7 @@ Or you can look up specific parts of the output:
 run_duncan.py --use mymodule.MyDuncan --query "select version()" --pos-begin 10 --pos-end 20
 ```
 
-Duncan starts an individual thread for each tested character position, so large windows can result in high load at server side.
+Duncan starts an individual thread for each tested character position, so large windows can result in high load at server side. You can specify the number of threads with `--threads`.
 
 ### Strictly typed database backends
 
